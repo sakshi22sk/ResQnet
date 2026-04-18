@@ -1,81 +1,101 @@
-/**
- * src/routes/authRoutes.js
- * Handles user authentication: register, login, refresh, logout, profile.
- */
+import { useState } from "react";
 
-const express = require("express");
-const router = express.Router();
-const Joi = require("joi");
-const validate = require("../middlewares/validate");
-const auth = require("../middlewares/auth");
-const { sendOtp, verifyOtp } = require("../controllers/otpController");
+export default function AuthPage() {
+  const [form, setForm] = useState({
+    name: "",
+    dob: "",
+    email: "",
+  });
 
-const {
-  register,
-  login,
-  refreshAccessToken,
-  logout,
-  getProfile,
-  updateProfileImage,
-  checkEmail
-} = require("../controllers/authController");
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
-const registerSchema = Joi.object({
-  name: Joi.string().min(2).required().messages({
-    "string.empty": "Name is required",
-    "string.min": "Name must be at least 2 characters"
-  }),
+  const handleLogin = () => {
+    if (!form.name || !form.dob || !form.email) {
+      alert("Fill all fields");
+      return;
+    }
 
-  email: Joi.string().email().required().messages({
-    "string.empty": "Email is required",
-    "string.email": "Please enter a valid email address"
-  }),
+    localStorage.setItem("user", JSON.stringify(form));
+    alert("🎉 Logged in!");
+    window.location.href = "/home";
+  };
 
-  phone: Joi.string().pattern(/^[0-9]{10}$/).required().messages({
-    "string.empty": "Phone number is required",
-    "string.pattern.base": "Phone number must be exactly 10 digits"
-  }),
+  return (
+    <div className="flex items-center justify-center min-h-screen px-6 bg-gradient-to-r from-[#FF3D4F] via-[#D241A6] to-[#1E2A78]">
 
-  password: Joi.string().min(6).required().messages({
-    "string.empty": "Password is required",
-    "string.min": "Password must be at least 6 characters"
-  }),
+      <div className="grid w-full max-w-6xl overflow-hidden border shadow-2xl md:grid-cols-2 rounded-2xl backdrop-blur-lg bg-white/20 border-white/30">
 
-  confirmPassword: Joi.string()
-    .valid(Joi.ref("password"))
-    .required()
-    .messages({
-      "any.only": "Passwords do not match",
-      "string.empty": "Confirm password is required"
-    })
+        {/* LEFT SIDE */}
+        <div className="flex flex-col justify-center p-12 text-white bg-gradient-to-r from-[#E63946] via-[#9D2FFF] to-[#1D3557]">
+          <h1 className="mb-6 text-5xl font-extrabold">ResQNet</h1>
+          <p className="italic opacity-90">
+            In the midst of every crisis, lies great opportunity.
+          </p>
+          <p className="mt-6 text-sm opacity-80">— Albert Einstein</p>
+        </div>
 
-}).options({ abortEarly: false });
+        {/* RIGHT SIDE */}
+        <div className="p-10 bg-white/70 backdrop-blur-xl">
+          <div className="max-w-md mx-auto space-y-4">
 
-const loginSchema = Joi.object({
-  email: Joi.string().email().required().messages({
-    "string.empty": "Email is required",
-    "string.email": "Invalid email format"
-  }),
-  password: Joi.string().min(6).required().messages({
-    "string.empty": "Password is required",
-    "string.min": "Password must be at least 6 characters"
-  })
-});
+            <h2 className="mb-6 text-3xl font-bold text-center text-gray-800">
+              Create Account
+            </h2>
 
-// 🧍 Public Routes
-router.post("/register", validate(registerSchema), register);
-router.post("/login", validate(loginSchema), login);
-router.post("/refresh", refreshAccessToken);
-router.post("/check-email", checkEmail);
-router.post("/send-otp", sendOtp);
-router.post("/verify-otp", verifyOtp);
+            {/* NAME */}
+            <div>
+              <label className="block mb-2 text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <input
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-lg"
+                placeholder="Enter your name"
+              />
+            </div>
 
-// 👤 Protected Route (requires authentication)
-router.get("/me", auth, getProfile);
+            {/* EMAIL */}
+            <div>
+              <label className="block mb-2 text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <input
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-lg"
+                placeholder="Enter your email"
+              />
+            </div>
 
-const upload = require("../middlewares/upload");
-router.post("/upload-profile", auth, upload.single("image"), updateProfileImage);
-router.post("/logout", logout);
+            {/* DOB */}
+            <div>
+              <label className="block mb-2 text-sm font-medium text-gray-700">
+                Date of Birth
+              </label>
+              <input
+                type="date"
+                name="dob"
+                value={form.dob}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
 
+            {/* BUTTON */}
+            <button
+              onClick={handleLogin}
+              className="w-full py-3 mt-4 font-semibold text-white rounded-lg bg-gradient-to-r from-[#E63946] to-[#9D2FFF] hover:opacity-90"
+            >
+              Let’s Go 🚀
+            </button>
 
-module.exports = router;
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
